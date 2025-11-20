@@ -1,0 +1,131 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>War Daddy | Whack Protection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              mono: ['"JetBrains Mono"', 'monospace'],
+              sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              'slate-950': '#020617',
+              'slate-900': '#0f172a',
+              'slate-800': '#1e293b',
+              'brand-cyan': '#06b6d4',     /* Cyan-500 */
+              'brand-cyan-glow': '#22d3ee', /* Cyan-400 */
+              'status-red': '#f43f5e',      /* Rose-500 */
+              'status-green': '#10b981',    /* Emerald-500 */
+              'status-amber': '#f59e0b',    /* Amber-500 */
+            },
+            animation: {
+              'spin-slow': 'spin 12s linear infinite',
+              'spin-reverse-slow': 'spin 16s linear infinite reverse',
+              'scan-vertical': 'scan-vertical 3s linear infinite',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        background-color: #020617;
+        color: #e2e8f0;
+        overflow-x: hidden;
+      }
+
+      /* CRT Overlay Effect */
+      .crt-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 9999;
+        pointer-events: none;
+        background: 
+          /* Scanlines */
+          linear-gradient(
+            rgba(18, 16, 16, 0) 50%, 
+            rgba(0, 0, 0, 0.1) 50%
+          ),
+          /* RGB Noise */
+          linear-gradient(
+            90deg, 
+            rgba(255, 0, 0, 0.03), 
+            rgba(0, 255, 0, 0.01), 
+            rgba(0, 0, 255, 0.03)
+          );
+        background-size: 100% 3px, 3px 100%;
+        box-shadow: inset 0 0 100px rgba(0,0,0,0.7); /* Vignette */
+        mix-blend-mode: overlay;
+      }
+
+      /* Slight CRT Flicker */
+      @keyframes flicker {
+        0% { opacity: 0.98; }
+        5% { opacity: 0.95; }
+        10% { opacity: 0.98; }
+        100% { opacity: 0.98; }
+      }
+      
+      .crt-flicker {
+        animation: flicker 0.15s infinite;
+      }
+
+      @keyframes scan-vertical {
+        0% { transform: translateY(-100%); }
+        100% { transform: translateY(100%); }
+      }
+
+      .hexagon-clip {
+        clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      }
+
+      /* Modern UI Scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0f172a; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #334155; 
+        border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #475569; 
+      }
+      
+      input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+        filter: invert(0.8);
+        cursor: pointer;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root" class="crt-flicker"></div>
+    <div class="crt-overlay"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
