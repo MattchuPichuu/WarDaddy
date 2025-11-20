@@ -1,17 +1,31 @@
 import React, { useState, useEffect } from 'react';
+import IntroVideo from './components/IntroVideo';
 import LandingPage from './components/LandingPage';
 import Dashboard from './components/Dashboard';
 import { User, UserRole } from './types';
 
 function App() {
+  const [showIntro, setShowIntro] = useState(true);
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('mm_tracker_user');
+    const hasSeenIntro = localStorage.getItem('mm_intro_seen');
+
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
+
+    // Skip intro if already seen
+    if (hasSeenIntro === 'true') {
+      setShowIntro(false);
+    }
   }, []);
+
+  const handleIntroComplete = () => {
+    localStorage.setItem('mm_intro_seen', 'true');
+    setShowIntro(false);
+  };
 
   const handleLogin = (role: UserRole) => {
     // Mock Login Process
@@ -32,10 +46,16 @@ function App() {
 
   return (
     <>
-      {user ? (
-        <Dashboard user={user} onLogout={handleLogout} />
+      {showIntro ? (
+        <IntroVideo onComplete={handleIntroComplete} />
       ) : (
-        <LandingPage onLogin={handleLogin} />
+        <>
+          {user ? (
+            <Dashboard user={user} onLogout={handleLogout} />
+          ) : (
+            <LandingPage onLogin={handleLogin} />
+          )}
+        </>
       )}
     </>
   );
