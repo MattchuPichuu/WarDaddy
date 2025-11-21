@@ -30,15 +30,16 @@ const PlayerRow: React.FC<PlayerRowProps> = ({ player, serverTime, userRole, onU
     }
   }, [confirmDead]);
 
-  // Format time for display: "DD/MM HH:MM"
+  // Format time for display: "DD/MM HH:MM" in UTC+0
   const getDisplayTime = (ts: number | null) => {
     if (!ts) return '';
     const d = new Date(ts);
     const pad = (n: number) => n.toString().padStart(2, '0');
-    return `${pad(d.getDate())}/${pad(d.getMonth() + 1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    return `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
   };
 
   // Parse pasted time - handles virtually any format intuitively
+  // MafiaMatrix times are in UTC+0, so we parse them as UTC
   const parseTimeInput = (input: string): number | null => {
     if (!input.trim()) return null;
 
@@ -46,14 +47,17 @@ const PlayerRow: React.FC<PlayerRowProps> = ({ player, serverTime, userRole, onU
     const cleaned = input.trim();
 
     // Try parsing with native Date constructor first (handles most formats including "11/21/2025 5:46:14 PM")
-    let d = new Date(cleaned);
+    // If the string doesn't have timezone info, JavaScript parses it as local time
+    // Since MafiaMatrix uses UTC+0, we need to try parsing as UTC first
+    let d = new Date(cleaned + ' UTC');
     if (!isNaN(d.getTime())) return d.getTime();
 
-    // Try with explicit UTC/GMT if it looks like it might be a date string
-    d = new Date(cleaned + ' GMT');
+    // If that didn't work, try without UTC suffix (for ISO strings that already have timezone)
+    d = new Date(cleaned);
     if (!isNaN(d.getTime())) return d.getTime();
 
     // Handle formats with slashes: MM/DD/YYYY or DD/MM/YYYY with optional time
+    // Parse as UTC since MafiaMatrix uses UTC+0
     const slashMatch = cleaned.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*(AM|PM))?)?/i);
     if (slashMatch) {
       // Try MM/DD/YYYY (US format) first
@@ -71,30 +75,33 @@ const PlayerRow: React.FC<PlayerRowProps> = ({ player, serverTime, userRole, onU
         if (ampm.toUpperCase() === 'AM' && hours === 12) hours = 0;
       }
 
-      d = new Date(year, month, day, hours, minutes, seconds);
-      if (!isNaN(d.getTime())) return d.getTime();
+      // Use Date.UTC to create UTC timestamp
+      let timestamp = Date.UTC(year, month, day, hours, minutes, seconds);
+      if (!isNaN(timestamp)) return timestamp;
 
       // If that didn't work, try DD/MM/YYYY (European format)
       month = parseInt(slashMatch[2]) - 1;
       day = parseInt(slashMatch[1]);
-      d = new Date(year, month, day, hours, minutes, seconds);
-      if (!isNaN(d.getTime())) return d.getTime();
+      timestamp = Date.UTC(year, month, day, hours, minutes, seconds);
+      if (!isNaN(timestamp)) return timestamp;
     }
 
     // Try DD/MM HH:MM or DD/MM HH:MM:SS format (without year)
+    // Parse as UTC since MafiaMatrix uses UTC+0
     const shortSlashMatch = cleaned.match(/(\d{1,2})\/(\d{1,2})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?/);
     if (shortSlashMatch) {
       const day = parseInt(shortSlashMatch[1]);
       const month = parseInt(shortSlashMatch[2]) - 1;
-      const year = new Date().getFullYear();
+      const now = new Date();
+      const year = now.getUTCFullYear();
       const hours = parseInt(shortSlashMatch[3]);
       const minutes = parseInt(shortSlashMatch[4]);
       const seconds = shortSlashMatch[5] ? parseInt(shortSlashMatch[5]) : 0;
-      d = new Date(year, month, day, hours, minutes, seconds);
-      if (!isNaN(d.getTime())) return d.getTime();
+      const timestamp = Date.UTC(year, month, day, hours, minutes, seconds);
+      if (!isNaN(timestamp)) return timestamp;
     }
 
-    // Try HH:MM format (today's date)
+    // Try HH:MM format (today's date in UTC)
     const timeMatch = cleaned.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*(AM|PM))?$/i);
     if (timeMatch) {
       const now = new Date();
@@ -109,8 +116,8 @@ const PlayerRow: React.FC<PlayerRowProps> = ({ player, serverTime, userRole, onU
         if (ampm.toUpperCase() === 'AM' && hours === 12) hours = 0;
       }
 
-      d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, seconds);
-      if (!isNaN(d.getTime())) return d.getTime();
+      const timestamp = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), hours, minutes, seconds);
+      if (!isNaN(timestamp)) return timestamp;
     }
 
     return null;

@@ -23,12 +23,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const canManage = user.role === UserRole.ADMIN;
   const canRunOps = user.role === UserRole.ADMIN || user.role === UserRole.EDITOR;
 
-  // Sync Server Time to GMT (MafiaMatrix server time)
+  // Sync Server Time to UTC+0 (MafiaMatrix server time)
   useEffect(() => {
     const updateServerTime = () => {
-      const now = new Date();
-      const gmtTime = now.getTime() + (now.getTimezoneOffset() * 60 * 1000);
-      setServerTime(gmtTime);
+      // Date.now() already returns UTC milliseconds since epoch
+      setServerTime(Date.now());
     };
 
     updateServerTime();
@@ -127,7 +126,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           <div className="flex items-center gap-2 font-mono text-sm text-white bg-tactical-gray px-4 py-2 border border-tactical-border">
             <Clock size={14} className="text-accent-red" />
             <span className="tracking-wider">{new Date(serverTime).toISOString().slice(11, 19)}</span>
-            <span className="text-[10px] text-tactical-text ml-1">GMT</span>
+            <span className="text-[10px] text-tactical-text ml-1">UTC+0</span>
           </div>
 
           {/* Actions */}
