@@ -83,7 +83,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const handleAddCMPlayer = () => {
     if (!canManage) return;
 
-    const name = prompt("Enter CM Player Name:");
+    const name = prompt("Enter Player Name:");
     if (!name) return;
 
     const discordId = prompt("Enter Discord ID (Numeric, Optional):") || '';
@@ -101,7 +101,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
   const handleDeleteCMPlayer = (id: string) => {
     if (!canManage) return;
-    if (!confirm("Delete CM player?")) return;
+    if (!confirm("Delete player?")) return;
     setCmPlayers(cmPlayers.filter(p => p.id !== id));
   };
 
@@ -307,14 +307,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
       </div>
 
-      {/* CM Skills Panel */}
+      {/* Skill Timers Panel */}
       <div className="max-w-7xl mx-auto mt-6 px-4">
         <div className="bg-tactical-dark border border-tactical-border">
           <div className="flex justify-between items-center px-4 py-3 border-b border-tactical-border bg-tactical-gray/50">
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 bg-accent-red rounded-full"></div>
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-white">CM Skills</h2>
-              <span className="text-[10px] text-tactical-text font-mono">{cmPlayers.length} Friendlies</span>
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-white">Skill Timers</h2>
+              <span className="text-[10px] text-tactical-text font-mono">{cmPlayers.length} Players</span>
             </div>
             {canManage && (
               <button
