@@ -23,7 +23,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [isPosting, setIsPosting] = useState(false);
 
   const canManage = user.role === UserRole.ADMIN;
-  const canRunOps = user.role === UserRole.ADMIN || user.role === UserRole.EDITOR;
 
   // Sync Server Time to UTC+0 (MafiaMatrix server time)
   useEffect(() => {
@@ -107,7 +106,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   };
 
   const handleGenerateSitrep = async () => {
-    if (!canRunOps) return;
+    if (!canManage) return;
     setIsGenerating(true);
     setSitrep(null);
     const report = await generateSitrep(friendlies, enemies);
@@ -116,7 +115,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   };
 
   const handlePostBoard = async () => {
-    if (!canRunOps) return;
+    if (!canManage) return;
 
     let webhook = localStorage.getItem('mm_discord_webhook');
     if (!webhook) {
@@ -171,7 +170,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
           {/* Actions */}
           <div className="flex items-center gap-3">
-            {canRunOps && (
+            {canManage && (
               <>
                 <button
                   onClick={handlePostBoard}

@@ -20,7 +20,7 @@ const PlayerRow: React.FC<PlayerRowProps> = ({ player, serverTime, userRole, onU
   const [confirmDead, setConfirmDead] = useState(false);
   const [flash, setFlash] = useState(false);
 
-  const canEdit = userRole === UserRole.ADMIN || userRole === UserRole.EDITOR;
+  const canEdit = userRole === UserRole.ADMIN;
   const canDelete = userRole === UserRole.ADMIN;
 
   useEffect(() => {

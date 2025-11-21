@@ -44,7 +44,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
         <div className="space-y-6 w-full border-t border-tactical-border pt-6">
           <div className="flex flex-col gap-3">
             <label className="text-[10px] text-tactical-text uppercase font-medium tracking-widest text-left">Access Level</label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {(Object.keys(UserRole) as Array<keyof typeof UserRole>).map((key) => (
                 <button
                   key={key}

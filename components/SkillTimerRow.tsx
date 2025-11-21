@@ -18,7 +18,7 @@ const SkillTimerRow: React.FC<SkillTimerRowProps> = ({ timer, serverTime, userRo
   const [editDiscordId, setEditDiscordId] = useState(timer.discordId || '');
   const [editDuration, setEditDuration] = useState('');
 
-  const canEdit = userRole === UserRole.ADMIN || userRole === UserRole.EDITOR;
+  const canEdit = userRole === UserRole.ADMIN;
   const canDelete = userRole === UserRole.ADMIN;
 
   // Calculate timer status and display
