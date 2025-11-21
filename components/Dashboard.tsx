@@ -5,7 +5,7 @@ import { INITIAL_FRIENDLIES, INITIAL_ENEMIES } from '../constants';
 import PlayerRow from './PlayerRow';
 import { generateSitrep } from '../services/geminiService';
 import { postWarBoardToDiscord } from '../services/discordService';
-import { Plus, Bot, LogOut, Clock, Shield, FileText, Share2, Settings } from 'lucide-react';
+import { Plus, LogOut, Clock, FileText, Send, Crosshair } from 'lucide-react';
 
 interface DashboardProps {
   user: User;
@@ -20,14 +20,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
 
-  // Role Permissions
   const canManage = user.role === UserRole.ADMIN;
   const canRunOps = user.role === UserRole.ADMIN || user.role === UserRole.EDITOR;
 
   // Sync Server Time to GMT (MafiaMatrix server time)
   useEffect(() => {
     const updateServerTime = () => {
-      // Get current time in GMT/UTC
       const now = new Date();
       const gmtTime = now.getTime() + (now.getTimezoneOffset() * 60 * 1000);
       setServerTime(gmtTime);
@@ -39,7 +37,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   }, []);
 
   const handleUpdatePlayer = (faction: Faction, updatedPlayer: Player) => {
-    const updateList = (list: Player[]) => 
+    const updateList = (list: Player[]) =>
       list.map(p => p.id === updatedPlayer.id ? updatedPlayer : p);
 
     if (faction === Faction.FRIENDLY) setFriendlies(updateList(friendlies));
@@ -47,219 +45,237 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   };
 
   const handleAddPlayer = (faction: Faction) => {
-      if (!canManage) return;
-      
-      const name = prompt("Enter Player Name:");
-      if (!name) return;
+    if (!canManage) return;
 
-      let discordId = '';
-      if (faction === Faction.FRIENDLY) {
-          discordId = prompt("Enter Discord ID (Numeric, Optional):") || '';
-      }
-      
-      const newPlayer: Player = {
-          id: Date.now().toString(),
-          name,
-          discordId,
-          faction,
-          status: PlayerStatus.OPEN,
-          lastShotTime: null
-      };
+    const name = prompt("Enter Player Name:");
+    if (!name) return;
 
-      if (faction === Faction.FRIENDLY) setFriendlies([...friendlies, newPlayer]);
-      else setEnemies([...enemies, newPlayer]);
+    let discordId = '';
+    if (faction === Faction.FRIENDLY) {
+      discordId = prompt("Enter Discord ID (Numeric, Optional):") || '';
+    }
+
+    const newPlayer: Player = {
+      id: Date.now().toString(),
+      name,
+      discordId,
+      faction,
+      status: PlayerStatus.OPEN,
+      lastShotTime: null
+    };
+
+    if (faction === Faction.FRIENDLY) setFriendlies([...friendlies, newPlayer]);
+    else setEnemies([...enemies, newPlayer]);
   };
 
   const handleDeletePlayer = (faction: Faction, id: string) => {
-      if (!canManage) return;
-      if (!confirm("Delete player?")) return;
-      if (faction === Faction.FRIENDLY) setFriendlies(friendlies.filter(p => p.id !== id));
-      else setEnemies(enemies.filter(p => p.id !== id));
+    if (!canManage) return;
+    if (!confirm("Delete player?")) return;
+    if (faction === Faction.FRIENDLY) setFriendlies(friendlies.filter(p => p.id !== id));
+    else setEnemies(enemies.filter(p => p.id !== id));
   }
 
   const handleGenerateSitrep = async () => {
-      if (!canRunOps) return;
-      setIsGenerating(true);
-      setSitrep(null);
-      const report = await generateSitrep(friendlies, enemies);
-      setSitrep(report);
-      setIsGenerating(false);
+    if (!canRunOps) return;
+    setIsGenerating(true);
+    setSitrep(null);
+    const report = await generateSitrep(friendlies, enemies);
+    setSitrep(report);
+    setIsGenerating(false);
   };
 
   const handlePostBoard = async () => {
-      if (!canRunOps) return;
-      
-      let webhook = localStorage.getItem('mm_discord_webhook');
-      if (!webhook) {
-          webhook = prompt("Enter Discord Webhook URL to enable posting:");
-          if (webhook) localStorage.setItem('mm_discord_webhook', webhook);
-          else return;
-      }
+    if (!canRunOps) return;
 
-      setIsPosting(true);
-      const success = await postWarBoardToDiscord(webhook, friendlies, enemies, serverTime);
-      setIsPosting(false);
-      
-      if (success) alert("Board posted to Discord successfully.");
-      else {
-          if (confirm("Failed to post. Update Webhook URL?")) {
-              localStorage.removeItem('mm_discord_webhook');
-              handlePostBoard(); // Retry logic
-          }
+    let webhook = localStorage.getItem('mm_discord_webhook');
+    if (!webhook) {
+      webhook = prompt("Enter Discord Webhook URL to enable posting:");
+      if (webhook) localStorage.setItem('mm_discord_webhook', webhook);
+      else return;
+    }
+
+    setIsPosting(true);
+    const success = await postWarBoardToDiscord(webhook, friendlies, enemies, serverTime);
+    setIsPosting(false);
+
+    if (success) alert("Board posted to Discord successfully.");
+    else {
+      if (confirm("Failed to post. Update Webhook URL?")) {
+        localStorage.removeItem('mm_discord_webhook');
+        handlePostBoard();
       }
+    }
   };
 
-  const TableHeader = ({ title, colorClass, count }: { title: string, colorClass: string, count: number }) => (
-      <div className={`px-4 py-3 border-b border-slate-800 flex justify-between items-center ${colorClass} bg-opacity-10`}>
-          <div className="flex items-center gap-2">
-            <h2 className={`text-lg font-bold uppercase tracking-wide ${colorClass.replace('bg-', 'text-')}`}>{title}</h2>
-            <span className="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full font-mono">{count}</span>
-          </div>
-      </div>
-  );
-
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 pb-20 font-sans">
-        {/* Top Bar */}
-        <div className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 shadow-md">
-            <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
-                <div className="flex items-center gap-3">
-                    <Shield className="text-brand-cyan w-6 h-6" />
-                    <h1 className="text-xl font-bold text-white tracking-tight font-mono">WAR<span className="text-brand-cyan">DADDY</span></h1>
-                    <div className="hidden md:flex px-2 py-0.5 bg-slate-800 rounded text-[10px] font-bold text-slate-400 tracking-wider uppercase items-center gap-1 border border-slate-700">
-                        {user.role}
-                    </div>
-                </div>
-                
-                <div className="flex items-center gap-2 font-mono text-lg text-slate-200 bg-slate-950 px-4 py-1 rounded border border-slate-800 shadow-inner">
-                    <Clock size={14} className="text-brand-cyan" />
-                    <span>{new Date(serverTime).toISOString().slice(11, 19)}</span>
-                    <span className="text-[10px] text-slate-500">GMT</span>
-                </div>
+    <div className="min-h-screen bg-tactical-black text-gray-200 pb-20 font-sans">
+      {/* Top Bar */}
+      <header className="sticky top-0 z-50 bg-tactical-dark/95 backdrop-blur border-b border-tactical-border">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
+          {/* Logo */}
+          <div className="flex items-center gap-3">
+            <Crosshair className="text-accent-gold w-5 h-5" />
+            <h1 className="text-lg font-bold text-white tracking-wider font-mono">
+              WAR<span className="text-accent-gold">DADDY</span>
+            </h1>
+            <span className="px-2 py-0.5 bg-tactical-gray text-[10px] font-medium text-tactical-text uppercase tracking-wider border border-tactical-border">
+              {user.role}
+            </span>
+          </div>
 
-                <div className="flex items-center gap-4">
-                    {canRunOps && (
-                        <>
-                            <button 
-                                onClick={handlePostBoard}
-                                disabled={isPosting}
-                                className="hidden md:flex items-center gap-2 bg-slate-800 hover:bg-[#5865F2] hover:text-white text-slate-300 border border-slate-700 px-3 py-1.5 rounded text-sm transition-all"
-                                title="Post Board to Discord Webhook"
-                            >
-                                <Share2 size={16} />
-                                {isPosting ? 'Posting...' : 'Post Board'}
-                            </button>
-                            <button 
-                                onClick={handleGenerateSitrep}
-                                disabled={isGenerating}
-                                className="hidden md:flex items-center gap-2 bg-indigo-900/30 hover:bg-indigo-900/50 text-indigo-300 border border-indigo-800 px-4 py-1.5 rounded text-sm transition-all hover:border-indigo-500"
-                            >
-                                <Bot size={16} />
-                                {isGenerating ? 'Generating...' : 'Generate Report'}
-                            </button>
-                        </>
-                    )}
-                    <button onClick={onLogout} className="text-slate-500 hover:text-white transition-colors">
-                        <LogOut size={20} />
-                    </button>
-                </div>
+          {/* Server Time */}
+          <div className="flex items-center gap-2 font-mono text-sm text-white bg-tactical-gray px-4 py-2 border border-tactical-border">
+            <Clock size={14} className="text-accent-gold" />
+            <span className="tracking-wider">{new Date(serverTime).toISOString().slice(11, 19)}</span>
+            <span className="text-[10px] text-tactical-text ml-1">GMT</span>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-3">
+            {canRunOps && (
+              <>
+                <button
+                  onClick={handlePostBoard}
+                  disabled={isPosting}
+                  className="hidden md:flex items-center gap-2 bg-tactical-gray hover:bg-tactical-border text-gray-300 border border-tactical-border px-3 py-2 text-xs uppercase tracking-wider transition-colors"
+                >
+                  <Send size={14} />
+                  {isPosting ? 'Posting...' : 'Post to Discord'}
+                </button>
+                <button
+                  onClick={handleGenerateSitrep}
+                  disabled={isGenerating}
+                  className="hidden md:flex items-center gap-2 bg-accent-gold/10 hover:bg-accent-gold/20 text-accent-gold border border-accent-gold/30 px-3 py-2 text-xs uppercase tracking-wider transition-colors"
+                >
+                  <FileText size={14} />
+                  {isGenerating ? 'Generating...' : 'Intel Report'}
+                </button>
+              </>
+            )}
+            <button
+              onClick={onLogout}
+              className="text-tactical-text hover:text-white transition-colors p-2"
+            >
+              <LogOut size={18} />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* AI Report Output */}
+      {sitrep && (
+        <div className="max-w-7xl mx-auto mt-6 px-4">
+          <div className="bg-tactical-dark border border-tactical-border p-4">
+            <div className="flex justify-between items-start mb-3 border-b border-tactical-border pb-2">
+              <h3 className="text-accent-gold font-medium text-xs uppercase tracking-wider flex items-center gap-2">
+                <FileText size={14} /> Intelligence Report
+              </h3>
+              <button
+                onClick={() => { navigator.clipboard.writeText(sitrep); alert("Copied!"); }}
+                className="text-[10px] bg-tactical-gray hover:bg-tactical-border text-gray-400 px-2 py-1 uppercase tracking-wider transition-colors"
+              >
+                Copy
+              </button>
             </div>
+            <div className="font-mono text-xs text-gray-400 whitespace-pre-wrap leading-relaxed">{sitrep}</div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Grid */}
+      <div className="max-w-7xl mx-auto mt-6 grid grid-cols-1 xl:grid-cols-2 gap-6 px-4">
+
+        {/* Friendlies Panel */}
+        <div className="bg-tactical-dark border border-tactical-border">
+          <div className="flex justify-between items-center px-4 py-3 border-b border-tactical-border bg-tactical-gray/50">
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 bg-status-friendly rounded-full"></div>
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-white">Friendlies</h2>
+              <span className="text-[10px] text-tactical-text font-mono">{friendlies.length}</span>
+            </div>
+            {canManage && (
+              <button
+                onClick={() => handleAddPlayer(Faction.FRIENDLY)}
+                className="text-status-friendly hover:bg-status-friendly/10 p-1.5 transition-colors"
+              >
+                <Plus size={16}/>
+              </button>
+            )}
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="text-[10px] text-tactical-text uppercase tracking-wider border-b border-tactical-border">
+                  <th className="px-4 py-3 font-medium">Name</th>
+                  <th className="px-4 py-3 font-medium">Shot Time</th>
+                  <th className="px-4 py-3 font-medium">Pro Start</th>
+                  <th className="px-4 py-3 font-medium">Pro End</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {friendlies.map(p => (
+                  <PlayerRow
+                    key={p.id}
+                    player={p}
+                    serverTime={serverTime}
+                    userRole={user.role}
+                    onUpdate={(updated) => handleUpdatePlayer(Faction.FRIENDLY, updated)}
+                    onDelete={(id) => handleDeletePlayer(Faction.FRIENDLY, id)}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        {/* AI Output */}
-        {sitrep && (
-            <div className="max-w-7xl mx-auto mt-6 mx-4 bg-slate-900 border border-slate-700 rounded-lg p-4 animate-in fade-in slide-in-from-top-2 shadow-xl">
-                 <div className="flex justify-between items-start mb-3 border-b border-slate-800 pb-2">
-                     <h3 className="text-indigo-400 font-bold text-sm uppercase tracking-wider flex items-center gap-2">
-                        <FileText size={14} /> Analysis Report
-                     </h3>
-                     <button 
-                        onClick={() => { navigator.clipboard.writeText(sitrep); alert("Copied to clipboard!"); }}
-                        className="text-xs bg-indigo-900/30 hover:bg-indigo-900/50 text-indigo-300 px-3 py-1 rounded transition-colors"
-                    >
-                        Copy to Clipboard
-                     </button>
-                 </div>
-                 <div className="font-mono text-sm text-slate-300 whitespace-pre-wrap">{sitrep}</div>
+        {/* Enemies Panel */}
+        <div className="bg-tactical-dark border border-tactical-border">
+          <div className="flex justify-between items-center px-4 py-3 border-b border-tactical-border bg-tactical-gray/50">
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 bg-status-hostile rounded-full"></div>
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-white">Hostiles</h2>
+              <span className="text-[10px] text-tactical-text font-mono">{enemies.length}</span>
             </div>
-        )}
-
-        {/* Main Grid */}
-        <div className="max-w-7xl mx-auto mt-8 grid grid-cols-1 xl:grid-cols-2 gap-8 px-4">
-            
-            {/* Friendlies Panel */}
-            <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden shadow-lg">
-                <div className="flex justify-between items-center bg-slate-800/30">
-                    <TableHeader title="Friendlies" colorClass="text-brand-cyan" count={friendlies.length} />
-                    {canManage && (
-                        <button onClick={() => handleAddPlayer(Faction.FRIENDLY)} className="mr-4 text-brand-cyan hover:text-white bg-brand-cyan/10 hover:bg-brand-cyan/20 p-1.5 rounded transition-colors"><Plus size={16}/></button>
-                    )}
-                </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="text-[10px] text-slate-500 uppercase tracking-wider border-b border-slate-800 bg-slate-950/50">
-                                <th className="p-3 font-semibold">Name / ID</th>
-                                <th className="p-3 font-semibold">Time Shot</th>
-                                <th className="p-3 font-semibold text-brand-cyan/70">Pro Start (+3:40)</th>
-                                <th className="p-3 font-semibold text-status-red/70">Pro End (+4:20)</th>
-                                <th className="p-3 font-semibold">Timer</th>
-                                <th className="p-3 text-right font-semibold">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-800">
-                            {friendlies.map(p => (
-                                <PlayerRow 
-                                    key={p.id} 
-                                    player={p} 
-                                    serverTime={serverTime}
-                                    userRole={user.role}
-                                    onUpdate={(updated) => handleUpdatePlayer(Faction.FRIENDLY, updated)}
-                                    onDelete={(id) => handleDeletePlayer(Faction.FRIENDLY, id)}
-                                />
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            {/* Enemies Panel */}
-            <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden shadow-lg">
-                <div className="flex justify-between items-center bg-slate-800/30">
-                    <TableHeader title="Enemies" colorClass="text-status-red" count={enemies.length} />
-                    {canManage && (
-                         <button onClick={() => handleAddPlayer(Faction.ENEMY)} className="mr-4 text-status-red hover:text-white bg-status-red/10 hover:bg-status-red/20 p-1.5 rounded transition-colors"><Plus size={16}/></button>
-                    )}
-                </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="text-[10px] text-slate-500 uppercase tracking-wider border-b border-slate-800 bg-slate-950/50">
-                                <th className="p-3 font-semibold">Name</th>
-                                <th className="p-3 font-semibold">Time Shot</th>
-                                <th className="p-3 font-semibold text-brand-cyan/70">Pro Start (+3:40)</th>
-                                <th className="p-3 font-semibold text-status-red/70">Pro End (+4:20)</th>
-                                <th className="p-3 font-semibold">Timer</th>
-                                <th className="p-3 text-right font-semibold">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-800">
-                            {enemies.map(p => (
-                                <PlayerRow 
-                                    key={p.id} 
-                                    player={p} 
-                                    serverTime={serverTime}
-                                    userRole={user.role}
-                                    onUpdate={(updated) => handleUpdatePlayer(Faction.ENEMY, updated)}
-                                    onDelete={(id) => handleDeletePlayer(Faction.ENEMY, id)}
-                                />
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
+            {canManage && (
+              <button
+                onClick={() => handleAddPlayer(Faction.ENEMY)}
+                className="text-status-hostile hover:bg-status-hostile/10 p-1.5 transition-colors"
+              >
+                <Plus size={16}/>
+              </button>
+            )}
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="text-[10px] text-tactical-text uppercase tracking-wider border-b border-tactical-border">
+                  <th className="px-4 py-3 font-medium">Name</th>
+                  <th className="px-4 py-3 font-medium">Shot Time</th>
+                  <th className="px-4 py-3 font-medium">Pro Start</th>
+                  <th className="px-4 py-3 font-medium">Pro End</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {enemies.map(p => (
+                  <PlayerRow
+                    key={p.id}
+                    player={p}
+                    serverTime={serverTime}
+                    userRole={user.role}
+                    onUpdate={(updated) => handleUpdatePlayer(Faction.ENEMY, updated)}
+                    onDelete={(id) => handleDeletePlayer(Faction.ENEMY, id)}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
+
+      </div>
     </div>
   );
 };

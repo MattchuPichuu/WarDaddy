@@ -16,19 +16,20 @@
               sans: ['Inter', 'sans-serif'],
             },
             colors: {
-              'slate-950': '#020617',
-              'slate-900': '#0f172a',
-              'slate-800': '#1e293b',
-              'brand-cyan': '#06b6d4',     /* Cyan-500 */
-              'brand-cyan-glow': '#22d3ee', /* Cyan-400 */
-              'status-red': '#f43f5e',      /* Rose-500 */
-              'status-green': '#10b981',    /* Emerald-500 */
-              'status-amber': '#f59e0b',    /* Amber-500 */
+              'tactical-black': '#0a0a0a',
+              'tactical-dark': '#111111',
+              'tactical-gray': '#1a1a1a',
+              'tactical-border': '#2a2a2a',
+              'tactical-text': '#9ca3af',
+              'accent-gold': '#d4a54a',
+              'accent-gold-dim': '#9a7a3a',
+              'status-hostile': '#dc2626',
+              'status-friendly': '#22c55e',
+              'status-warning': '#eab308',
+              'status-protected': '#3b82f6',
             },
             animation: {
-              'spin-slow': 'spin 12s linear infinite',
-              'spin-reverse-slow': 'spin 16s linear infinite reverse',
-              'scan-vertical': 'scan-vertical 3s linear infinite',
+              'pulse-slow': 'pulse 3s ease-in-out infinite',
             }
           }
         }
@@ -36,78 +37,52 @@
     </script>
     <style>
       body {
-        background-color: #020617;
-        color: #e2e8f0;
+        background-color: #0a0a0a;
+        color: #e5e5e5;
         overflow-x: hidden;
       }
 
-      /* CRT Overlay Effect */
-      .crt-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        z-index: 9999;
-        pointer-events: none;
-        background: 
-          /* Scanlines */
-          linear-gradient(
-            rgba(18, 16, 16, 0) 50%, 
-            rgba(0, 0, 0, 0.1) 50%
-          ),
-          /* RGB Noise */
-          linear-gradient(
-            90deg, 
-            rgba(255, 0, 0, 0.03), 
-            rgba(0, 255, 0, 0.01), 
-            rgba(0, 0, 255, 0.03)
-          );
-        background-size: 100% 3px, 3px 100%;
-        box-shadow: inset 0 0 100px rgba(0,0,0,0.7); /* Vignette */
-        mix-blend-mode: overlay;
+      /* Subtle grid background */
+      .tactical-bg {
+        background-image:
+          linear-gradient(rgba(42, 42, 42, 0.3) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(42, 42, 42, 0.3) 1px, transparent 1px);
+        background-size: 20px 20px;
       }
 
-      /* Slight CRT Flicker */
-      @keyframes flicker {
-        0% { opacity: 0.98; }
-        5% { opacity: 0.95; }
-        10% { opacity: 0.98; }
-        100% { opacity: 0.98; }
-      }
-      
-      .crt-flicker {
-        animation: flicker 0.15s infinite;
+      /* Status indicator pulse */
+      @keyframes status-pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
       }
 
-      @keyframes scan-vertical {
-        0% { transform: translateY(-100%); }
-        100% { transform: translateY(100%); }
-      }
-
-      .hexagon-clip {
-        clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      .status-pulse {
+        animation: status-pulse 2s ease-in-out infinite;
       }
 
       /* Modern UI Scrollbar */
       ::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
+        width: 4px;
+        height: 4px;
       }
       ::-webkit-scrollbar-track {
-        background: #0f172a; 
+        background: #111111;
       }
       ::-webkit-scrollbar-thumb {
-        background: #334155; 
-        border-radius: 3px;
+        background: #333333;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: #475569; 
+        background: #444444;
       }
-      
+
       input[type="datetime-local"]::-webkit-calendar-picker-indicator {
         filter: invert(0.8);
         cursor: pointer;
+      }
+
+      /* Table hover effect */
+      .tactical-row:hover {
+        background-color: rgba(212, 165, 74, 0.05);
       }
     </style>
   <script type="importmap">
@@ -123,9 +98,8 @@
 </script>
 <link rel="stylesheet" href="/index.css">
 </head>
-  <body>
-    <div id="root" class="crt-flicker"></div>
-    <div class="crt-overlay"></div>
+  <body class="tactical-bg">
+    <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>
 </html>
