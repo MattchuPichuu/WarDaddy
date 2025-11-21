@@ -38,32 +38,78 @@ const PlayerRow: React.FC<PlayerRowProps> = ({ player, serverTime, userRole, onU
     return `${pad(d.getDate())}/${pad(d.getMonth() + 1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
   };
 
-  // Parse pasted time - accepts formats like "21/11 15:30" or "15:30" or "21/11/2025 15:30:00"
+  // Parse pasted time - handles virtually any format intuitively
   const parseTimeInput = (input: string): number | null => {
     if (!input.trim()) return null;
 
-    // Try parsing as full date first
-    let d = new Date(input);
+    // Clean up input
+    const cleaned = input.trim();
+
+    // Try parsing with native Date constructor first (handles most formats including "11/21/2025 5:46:14 PM")
+    let d = new Date(cleaned);
     if (!isNaN(d.getTime())) return d.getTime();
 
-    // Try DD/MM HH:MM or DD/MM HH:MM:SS format
-    const match = input.match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\s+(\d{1,2}):(\d{2})(?::(\d{2}))?/);
-    if (match) {
-      const day = parseInt(match[1]);
-      const month = parseInt(match[2]) - 1;
-      const year = match[3] ? (match[3].length === 2 ? 2000 + parseInt(match[3]) : parseInt(match[3])) : new Date().getFullYear();
-      const hours = parseInt(match[4]);
-      const minutes = parseInt(match[5]);
-      const seconds = match[6] ? parseInt(match[6]) : 0;
+    // Try with explicit UTC/GMT if it looks like it might be a date string
+    d = new Date(cleaned + ' GMT');
+    if (!isNaN(d.getTime())) return d.getTime();
+
+    // Handle formats with slashes: MM/DD/YYYY or DD/MM/YYYY with optional time
+    const slashMatch = cleaned.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*(AM|PM))?)?/i);
+    if (slashMatch) {
+      // Try MM/DD/YYYY (US format) first
+      let month = parseInt(slashMatch[1]) - 1;
+      let day = parseInt(slashMatch[2]);
+      let year = slashMatch[3].length === 2 ? 2000 + parseInt(slashMatch[3]) : parseInt(slashMatch[3]);
+      let hours = slashMatch[4] ? parseInt(slashMatch[4]) : 0;
+      let minutes = slashMatch[5] ? parseInt(slashMatch[5]) : 0;
+      let seconds = slashMatch[6] ? parseInt(slashMatch[6]) : 0;
+      const ampm = slashMatch[7];
+
+      // Handle 12-hour format
+      if (ampm) {
+        if (ampm.toUpperCase() === 'PM' && hours < 12) hours += 12;
+        if (ampm.toUpperCase() === 'AM' && hours === 12) hours = 0;
+      }
+
+      d = new Date(year, month, day, hours, minutes, seconds);
+      if (!isNaN(d.getTime())) return d.getTime();
+
+      // If that didn't work, try DD/MM/YYYY (European format)
+      month = parseInt(slashMatch[2]) - 1;
+      day = parseInt(slashMatch[1]);
+      d = new Date(year, month, day, hours, minutes, seconds);
+      if (!isNaN(d.getTime())) return d.getTime();
+    }
+
+    // Try DD/MM HH:MM or DD/MM HH:MM:SS format (without year)
+    const shortSlashMatch = cleaned.match(/(\d{1,2})\/(\d{1,2})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+    if (shortSlashMatch) {
+      const day = parseInt(shortSlashMatch[1]);
+      const month = parseInt(shortSlashMatch[2]) - 1;
+      const year = new Date().getFullYear();
+      const hours = parseInt(shortSlashMatch[3]);
+      const minutes = parseInt(shortSlashMatch[4]);
+      const seconds = shortSlashMatch[5] ? parseInt(shortSlashMatch[5]) : 0;
       d = new Date(year, month, day, hours, minutes, seconds);
       if (!isNaN(d.getTime())) return d.getTime();
     }
 
     // Try HH:MM format (today's date)
-    const timeMatch = input.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+    const timeMatch = cleaned.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*(AM|PM))?$/i);
     if (timeMatch) {
       const now = new Date();
-      d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(timeMatch[1]), parseInt(timeMatch[2]), timeMatch[3] ? parseInt(timeMatch[3]) : 0);
+      let hours = parseInt(timeMatch[1]);
+      const minutes = parseInt(timeMatch[2]);
+      const seconds = timeMatch[3] ? parseInt(timeMatch[3]) : 0;
+      const ampm = timeMatch[4];
+
+      // Handle 12-hour format
+      if (ampm) {
+        if (ampm.toUpperCase() === 'PM' && hours < 12) hours += 12;
+        if (ampm.toUpperCase() === 'AM' && hours === 12) hours = 0;
+      }
+
+      d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, seconds);
       if (!isNaN(d.getTime())) return d.getTime();
     }
 
@@ -134,7 +180,7 @@ const PlayerRow: React.FC<PlayerRowProps> = ({ player, serverTime, userRole, onU
 
   const handleShotNow = () => {
     const now = Date.now();
-    setEditShotTime(getInputValue(now));
+    setEditShotTime(getDisplayTime(now));
     onUpdate({
       ...player,
       lastShotTime: now,
@@ -206,7 +252,7 @@ const PlayerRow: React.FC<PlayerRowProps> = ({ player, serverTime, userRole, onU
             type="text"
             value={editShotTime}
             onChange={(e) => setEditShotTime(e.target.value)}
-            placeholder="DD/MM HH:MM"
+            placeholder="Paste time (any format)"
             className="bg-tactical-black border border-tactical-border text-white p-2 w-full text-xs focus:border-accent-red outline-none font-mono"
           />
         ) : (
