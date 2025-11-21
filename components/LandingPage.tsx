@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Crosshair, Lock } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { UserRole } from '../types';
 
 interface LandingPageProps {
@@ -24,13 +24,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
       <div className={`relative z-10 p-8 max-w-md w-full flex flex-col items-center text-center bg-tactical-dark border border-tactical-border shadow-2xl transition-all duration-700 ease-out ${bootSequence ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
 
         {/* Logo Section */}
-        <div className="mb-8 relative w-24 h-24 flex items-center justify-center">
-          <div className="absolute inset-0 border border-tactical-border"></div>
-          <div className="absolute inset-2 border border-dashed border-tactical-border opacity-50"></div>
-
-          <div className="relative z-10 bg-tactical-black p-4 border border-accent-red/30">
-            <Crosshair className="w-10 h-10 text-accent-red" />
-          </div>
+        <div className="mb-6">
+          <img
+            src="/war-daddy-logo.png"
+            alt="War Daddy"
+            className="w-48 h-auto mx-auto"
+          />
         </div>
 
         {/* Title */}

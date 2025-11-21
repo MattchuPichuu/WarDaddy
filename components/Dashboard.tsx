@@ -5,7 +5,7 @@ import { INITIAL_FRIENDLIES, INITIAL_ENEMIES } from '../constants';
 import PlayerRow from './PlayerRow';
 import { generateSitrep } from '../services/geminiService';
 import { postWarBoardToDiscord } from '../services/discordService';
-import { Plus, LogOut, Clock, FileText, Send, Crosshair } from 'lucide-react';
+import { Plus, LogOut, Clock, FileText, Send } from 'lucide-react';
 
 interface DashboardProps {
   user: User;
@@ -114,7 +114,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <Crosshair className="text-accent-red w-5 h-5" />
+            <img src="/war-daddy-logo.png" alt="War Daddy" className="h-10 w-auto" />
             <h1 className="text-lg font-bold text-white tracking-wider font-mono">
               WAR<span className="text-accent-red">DADDY</span>
             </h1>
