@@ -24,11 +24,17 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const canManage = user.role === UserRole.ADMIN;
   const canRunOps = user.role === UserRole.ADMIN || user.role === UserRole.EDITOR;
 
-  // Sync Server Time (Simulation)
+  // Sync Server Time to GMT (MafiaMatrix server time)
   useEffect(() => {
-    const timer = setInterval(() => {
-      setServerTime(Date.now());
-    }, 1000);
+    const updateServerTime = () => {
+      // Get current time in GMT/UTC
+      const now = new Date();
+      const gmtTime = now.getTime() + (now.getTimezoneOffset() * 60 * 1000);
+      setServerTime(gmtTime);
+    };
+
+    updateServerTime();
+    const timer = setInterval(updateServerTime, 1000);
     return () => clearInterval(timer);
   }, []);
 
@@ -127,7 +133,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 
                 <div className="flex items-center gap-2 font-mono text-lg text-slate-200 bg-slate-950 px-4 py-1 rounded border border-slate-800 shadow-inner">
                     <Clock size={14} className="text-brand-cyan" />
-                    <span>{new Date(serverTime).toLocaleTimeString([], { hour12: false })}</span>
+                    <span>{new Date(serverTime).toISOString().slice(11, 19)}</span>
+                    <span className="text-[10px] text-slate-500">GMT</span>
                 </div>
 
                 <div className="flex items-center gap-4">
