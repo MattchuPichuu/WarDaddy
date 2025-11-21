@@ -113,7 +113,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <img src="/war-daddy-logo.png" alt="War Daddy" className="h-10 w-auto" />
+            <img src="/war-daddy-logo2.png" alt="War Daddy" className="h-10 w-auto" />
             <h1 className="text-lg font-bold text-white tracking-wider font-mono">
               WAR<span className="text-accent-red">DADDY</span>
             </h1>

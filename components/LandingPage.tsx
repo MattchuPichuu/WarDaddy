@@ -26,7 +26,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
         {/* Logo Section */}
         <div className="mb-6">
           <img
-            src="/war-daddy-logo.png"
+            src="/war-daddy-logo2.png"
             alt="War Daddy"
             className="w-48 h-auto mx-auto"
           />
