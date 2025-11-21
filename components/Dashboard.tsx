@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { Faction, Player, PlayerStatus, User, UserRole } from '../types';
-import { INITIAL_FRIENDLIES, INITIAL_ENEMIES } from '../constants';
+import { Faction, Player, PlayerStatus, User, UserRole, CMPlayer, SkillStatus } from '../types';
+import { INITIAL_FRIENDLIES, INITIAL_ENEMIES, INITIAL_CM_PLAYERS } from '../constants';
 import PlayerRow from './PlayerRow';
+import CMSkillRow from './CMSkillRow';
 import { generateSitrep } from '../services/geminiService';
 import { postWarBoardToDiscord } from '../services/discordService';
 import { Plus, LogOut, Clock, FileText, Send } from 'lucide-react';
@@ -15,6 +16,7 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [friendlies, setFriendlies] = useState<Player[]>(INITIAL_FRIENDLIES);
   const [enemies, setEnemies] = useState<Player[]>(INITIAL_ENEMIES);
+  const [cmPlayers, setCmPlayers] = useState<CMPlayer[]>(INITIAL_CM_PLAYERS);
   const [serverTime, setServerTime] = useState(Date.now());
   const [sitrep, setSitrep] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -73,6 +75,35 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     if (faction === Faction.FRIENDLY) setFriendlies(friendlies.filter(p => p.id !== id));
     else setEnemies(enemies.filter(p => p.id !== id));
   }
+
+  const handleUpdateCMPlayer = (updatedPlayer: CMPlayer) => {
+    setCmPlayers(cmPlayers.map(p => p.id === updatedPlayer.id ? updatedPlayer : p));
+  };
+
+  const handleAddCMPlayer = () => {
+    if (!canManage) return;
+
+    const name = prompt("Enter CM Player Name:");
+    if (!name) return;
+
+    const discordId = prompt("Enter Discord ID (Numeric, Optional):") || '';
+
+    const newPlayer: CMPlayer = {
+      id: Date.now().toString(),
+      name,
+      discordId,
+      lastSkillTime: null,
+      status: SkillStatus.OPEN
+    };
+
+    setCmPlayers([...cmPlayers, newPlayer]);
+  };
+
+  const handleDeleteCMPlayer = (id: string) => {
+    if (!canManage) return;
+    if (!confirm("Delete CM player?")) return;
+    setCmPlayers(cmPlayers.filter(p => p.id !== id));
+  };
 
   const handleGenerateSitrep = async () => {
     if (!canRunOps) return;
@@ -275,6 +306,53 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         </div>
 
       </div>
+
+      {/* CM Skills Panel */}
+      <div className="max-w-7xl mx-auto mt-6 px-4">
+        <div className="bg-tactical-dark border border-tactical-border">
+          <div className="flex justify-between items-center px-4 py-3 border-b border-tactical-border bg-tactical-gray/50">
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 bg-accent-red rounded-full"></div>
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-white">CM Skills</h2>
+              <span className="text-[10px] text-tactical-text font-mono">{cmPlayers.length} Friendlies</span>
+            </div>
+            {canManage && (
+              <button
+                onClick={handleAddCMPlayer}
+                className="text-accent-red hover:bg-accent-red/10 p-1.5 transition-colors"
+              >
+                <Plus size={16}/>
+              </button>
+            )}
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="text-[10px] text-tactical-text uppercase tracking-wider border-b border-tactical-border">
+                  <th className="px-4 py-3 font-medium">Name</th>
+                  <th className="px-4 py-3 font-medium">Last Skill Time</th>
+                  <th className="px-4 py-3 font-medium">Opens At</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cmPlayers.map(p => (
+                  <CMSkillRow
+                    key={p.id}
+                    player={p}
+                    serverTime={serverTime}
+                    userRole={user.role}
+                    onUpdate={handleUpdateCMPlayer}
+                    onDelete={handleDeleteCMPlayer}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 };

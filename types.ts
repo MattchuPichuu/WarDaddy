@@ -43,3 +43,16 @@ export interface User {
   avatar: string;
   role: UserRole;
 }
+
+export enum SkillStatus {
+  OPEN = 'OPEN',
+  CLOSED = 'CLOSED'
+}
+
+export interface CMPlayer {
+  id: string;
+  name: string;
+  discordId?: string;
+  lastSkillTime: number | null; // Timestamp in milliseconds
+  status: SkillStatus;
+}
