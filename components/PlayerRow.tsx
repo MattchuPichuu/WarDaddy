@@ -30,12 +30,17 @@ const PlayerRow: React.FC<PlayerRowProps> = ({ player, serverTime, userRole, onU
     }
   }, [confirmDead]);
 
-  // Format time for display: "DD/MM HH:MM" in UTC+0
+  // Format time for display: "DD/MM HH:MM AM/PM" in UTC+0
   const getDisplayTime = (ts: number | null) => {
     if (!ts) return '';
     const d = new Date(ts);
     const pad = (n: number) => n.toString().padStart(2, '0');
-    return `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+    let hours = d.getUTCHours();
+    const minutes = d.getUTCMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // 0 should be 12
+    return `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)} ${pad(hours)}:${pad(minutes)} ${ampm}`;
   };
 
   // Parse pasted time - handles virtually any format intuitively

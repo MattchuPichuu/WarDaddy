@@ -157,7 +157,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           {/* Server Time */}
           <div className="flex items-center gap-2 font-mono text-sm text-white bg-tactical-gray px-4 py-2 border border-tactical-border">
             <Clock size={14} className="text-accent-red" />
-            <span className="tracking-wider">{new Date(serverTime).toISOString().slice(11, 19)}</span>
+            <span className="tracking-wider">
+              {new Date(serverTime).toLocaleTimeString('en-US', {
+                hour12: true,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                timeZone: 'UTC'
+              })}
+            </span>
             <span className="text-[10px] text-tactical-text ml-1">UTC+0</span>
           </div>
 

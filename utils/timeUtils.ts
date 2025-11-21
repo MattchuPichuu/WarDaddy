@@ -3,11 +3,11 @@ import { PRO_START_OFFSET_MS, PRO_END_OFFSET_MS } from "../constants";
 
 export const formatTime = (timestamp: number): string => {
   const date = new Date(timestamp);
-  // Using en-GB for DD/MM/YYYY format, UTC timezone
-  return date.toLocaleString('en-GB', {
+  // Using en-US for 12-hour format with AM/PM, UTC timezone
+  return date.toLocaleString('en-US', {
     day: '2-digit',
     month: '2-digit',
-    hour12: false,
+    hour12: true,
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
