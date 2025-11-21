@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { Faction, Player, PlayerStatus, User, UserRole, CMPlayer, SkillStatus } from '../types';
-import { INITIAL_FRIENDLIES, INITIAL_ENEMIES, INITIAL_CM_PLAYERS } from '../constants';
+import { Faction, Player, PlayerStatus, User, UserRole, SkillTimer, TimerStatus } from '../types';
+import { INITIAL_FRIENDLIES, INITIAL_ENEMIES, INITIAL_SKILL_TIMERS } from '../constants';
 import PlayerRow from './PlayerRow';
-import CMSkillRow from './CMSkillRow';
+import SkillTimerRow from './SkillTimerRow';
 import { generateSitrep } from '../services/geminiService';
 import { postWarBoardToDiscord } from '../services/discordService';
 import { Plus, LogOut, Clock, FileText, Send } from 'lucide-react';
@@ -16,7 +16,7 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [friendlies, setFriendlies] = useState<Player[]>(INITIAL_FRIENDLIES);
   const [enemies, setEnemies] = useState<Player[]>(INITIAL_ENEMIES);
-  const [cmPlayers, setCmPlayers] = useState<CMPlayer[]>(INITIAL_CM_PLAYERS);
+  const [skillTimers, setSkillTimers] = useState<SkillTimer[]>(INITIAL_SKILL_TIMERS);
   const [serverTime, setServerTime] = useState(Date.now());
   const [sitrep, setSitrep] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -76,11 +76,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     else setEnemies(enemies.filter(p => p.id !== id));
   }
 
-  const handleUpdateCMPlayer = (updatedPlayer: CMPlayer) => {
-    setCmPlayers(cmPlayers.map(p => p.id === updatedPlayer.id ? updatedPlayer : p));
+  const handleUpdateTimer = (updatedTimer: SkillTimer) => {
+    setSkillTimers(skillTimers.map(t => t.id === updatedTimer.id ? updatedTimer : t));
   };
 
-  const handleAddCMPlayer = () => {
+  const handleAddTimer = () => {
     if (!canManage) return;
 
     const name = prompt("Enter Player Name:");
@@ -88,21 +88,22 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
     const discordId = prompt("Enter Discord ID (Numeric, Optional):") || '';
 
-    const newPlayer: CMPlayer = {
+    const newTimer: SkillTimer = {
       id: Date.now().toString(),
-      name,
+      playerName: name,
       discordId,
-      lastSkillTime: null,
-      status: SkillStatus.OPEN
+      timerEndTime: null,
+      status: TimerStatus.STOPPED,
+      notified: false
     };
 
-    setCmPlayers([...cmPlayers, newPlayer]);
+    setSkillTimers([...skillTimers, newTimer]);
   };
 
-  const handleDeleteCMPlayer = (id: string) => {
+  const handleDeleteTimer = (id: string) => {
     if (!canManage) return;
-    if (!confirm("Delete player?")) return;
-    setCmPlayers(cmPlayers.filter(p => p.id !== id));
+    if (!confirm("Delete timer?")) return;
+    setSkillTimers(skillTimers.filter(t => t.id !== id));
   };
 
   const handleGenerateSitrep = async () => {
@@ -314,11 +315,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 bg-accent-red rounded-full"></div>
               <h2 className="text-sm font-semibold uppercase tracking-wider text-white">Skill Timers</h2>
-              <span className="text-[10px] text-tactical-text font-mono">{cmPlayers.length} Players</span>
+              <span className="text-[10px] text-tactical-text font-mono">{skillTimers.length} Timers</span>
             </div>
             {canManage && (
               <button
-                onClick={handleAddCMPlayer}
+                onClick={handleAddTimer}
                 className="text-accent-red hover:bg-accent-red/10 p-1.5 transition-colors"
               >
                 <Plus size={16}/>
@@ -329,22 +330,21 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             <table className="w-full text-left">
               <thead>
                 <tr className="text-[10px] text-tactical-text uppercase tracking-wider border-b border-tactical-border">
-                  <th className="px-4 py-3 font-medium">Name</th>
-                  <th className="px-4 py-3 font-medium">Last Skill Time</th>
-                  <th className="px-4 py-3 font-medium">Opens At</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Player</th>
+                  <th className="px-4 py-3 font-medium">Set Timer</th>
+                  <th className="px-4 py-3 font-medium">Time Remaining</th>
                   <th className="px-4 py-3 font-medium text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {cmPlayers.map(p => (
-                  <CMSkillRow
-                    key={p.id}
-                    player={p}
+                {skillTimers.map(t => (
+                  <SkillTimerRow
+                    key={t.id}
+                    timer={t}
                     serverTime={serverTime}
                     userRole={user.role}
-                    onUpdate={handleUpdateCMPlayer}
-                    onDelete={handleDeleteCMPlayer}
+                    onUpdate={handleUpdateTimer}
+                    onDelete={handleDeleteTimer}
                   />
                 ))}
               </tbody>

@@ -1,13 +1,13 @@
 
-import { Faction, Player, PlayerStatus, CMPlayer, SkillStatus } from "./types";
+import { Faction, Player, PlayerStatus, SkillTimer, TimerStatus } from "./types";
 
 // 3 Hours 40 Minutes = 220 minutes
 export const PRO_START_OFFSET_MS = (3 * 60 + 40) * 60 * 1000;
 // 4 Hours 20 Minutes = 260 minutes
 export const PRO_END_OFFSET_MS = (4 * 60 + 20) * 60 * 1000;
 
-// CM Skill cooldown - 24 hours
-export const SKILL_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+// Alert threshold - notify when timer has this many minutes remaining
+export const TIMER_ALERT_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
 
 // Initial Mock Data
 export const INITIAL_FRIENDLIES: Player[] = [
@@ -28,8 +28,8 @@ export const INITIAL_ENEMIES: Player[] = [
   { id: 'e9', name: 'Beatriz', faction: Faction.ENEMY, status: PlayerStatus.OPEN, lastShotTime: null },
 ];
 
-export const INITIAL_CM_PLAYERS: CMPlayer[] = [
-  { id: 'cm1', name: 'Hus', discordId: '123456789012345678', lastSkillTime: Date.now() - 1000 * 60 * 60 * 20, status: SkillStatus.CLOSED },
-  { id: 'cm2', name: 'Klix', lastSkillTime: null, status: SkillStatus.OPEN },
-  { id: 'cm3', name: 'Rubicon', lastSkillTime: Date.now() - 1000 * 60 * 60 * 25, status: SkillStatus.OPEN },
+export const INITIAL_SKILL_TIMERS: SkillTimer[] = [
+  { id: 'st1', playerName: 'Hus', discordId: '123456789012345678', timerEndTime: Date.now() + 1000 * 60 * 45, status: TimerStatus.ACTIVE, notified: false },
+  { id: 'st2', playerName: 'Klix', timerEndTime: null, status: TimerStatus.STOPPED, notified: false },
+  { id: 'st3', playerName: 'Rubicon', timerEndTime: Date.now() + 1000 * 60 * 120, status: TimerStatus.ACTIVE, notified: false },
 ];

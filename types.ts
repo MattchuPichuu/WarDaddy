@@ -44,15 +44,17 @@ export interface User {
   role: UserRole;
 }
 
-export enum SkillStatus {
-  OPEN = 'OPEN',
-  CLOSED = 'CLOSED'
+export enum TimerStatus {
+  ACTIVE = 'ACTIVE',
+  EXPIRED = 'EXPIRED',
+  STOPPED = 'STOPPED'
 }
 
-export interface CMPlayer {
+export interface SkillTimer {
   id: string;
-  name: string;
+  playerName: string;
   discordId?: string;
-  lastSkillTime: number | null; // Timestamp in milliseconds
-  status: SkillStatus;
+  timerEndTime: number | null; // Timestamp when timer expires
+  status: TimerStatus;
+  notified?: boolean; // Whether we've sent the notification
 }
