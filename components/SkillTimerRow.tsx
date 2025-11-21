@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { SkillTimer, TimerStatus, UserRole } from '../types';
 import { getRemainingTime } from '../utils/timeUtils';
-import { Clock, Save, Trash2, Edit2, X, Play, Pause } from 'lucide-react';
+import { Save, Trash2, Edit2, X, Pause } from 'lucide-react';
 
 interface SkillTimerRowProps {
   timer: SkillTimer;
@@ -60,8 +60,8 @@ const SkillTimerRow: React.FC<SkillTimerRowProps> = ({ timer, serverTime, userRo
     setIsEditing(false);
   };
 
-  const handleStartTimer = () => {
-    if (!editDuration) return;
+  const handleStartTimer = (duration: string) => {
+    if (!duration.trim()) return;
 
     // Parse duration input (supports "2h", "30m", "1h30m", "90", etc.)
     const parseDuration = (input: string): number | null => {
@@ -84,10 +84,10 @@ const SkillTimerRow: React.FC<SkillTimerRowProps> = ({ timer, serverTime, userRo
       return totalMs > 0 ? totalMs : null;
     };
 
-    const duration = parseDuration(editDuration);
-    if (!duration) return;
+    const durationMs = parseDuration(duration);
+    if (!durationMs) return;
 
-    const endTime = Date.now() + duration;
+    const endTime = Date.now() + durationMs;
     onUpdate({
       ...timer,
       timerEndTime: endTime,
@@ -95,6 +95,12 @@ const SkillTimerRow: React.FC<SkillTimerRowProps> = ({ timer, serverTime, userRo
       notified: false
     });
     setEditDuration('');
+  };
+
+  const handleDurationKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleStartTimer(editDuration);
+    }
   };
 
   const handleStopTimer = () => {
@@ -145,25 +151,15 @@ const SkillTimerRow: React.FC<SkillTimerRowProps> = ({ timer, serverTime, userRo
 
       {/* Set Timer Duration */}
       <td className={cellClass}>
-        <div className="flex gap-2 items-center">
-          <input
-            type="text"
-            value={editDuration}
-            onChange={(e) => setEditDuration(e.target.value)}
-            placeholder="2h, 30m, 1h30m"
-            className="bg-tactical-black border border-tactical-border text-white p-2 w-24 text-xs focus:border-accent-red outline-none font-mono"
-            disabled={!canEdit}
-          />
-          {canEdit && (
-            <button
-              onClick={handleStartTimer}
-              className="text-accent-red hover:bg-accent-red/20 p-1.5 transition-colors"
-              title="Start Timer"
-            >
-              <Play size={14} />
-            </button>
-          )}
-        </div>
+        <input
+          type="text"
+          value={editDuration}
+          onChange={(e) => setEditDuration(e.target.value)}
+          onKeyDown={handleDurationKeyDown}
+          placeholder="2h, 30m, 1h30m"
+          className="bg-tactical-black border border-tactical-border text-white p-2 w-32 text-xs focus:border-accent-red outline-none font-mono"
+          disabled={!canEdit}
+        />
       </td>
 
       {/* Time Remaining */}
