@@ -30,19 +30,47 @@ const PlayerRow: React.FC<PlayerRowProps> = ({ player, serverTime, userRole, onU
     }
   }, [confirmDead]);
 
-  const getInputValue = (ts: number | null) => {
+  // Format time for display: "DD/MM HH:MM"
+  const getDisplayTime = (ts: number | null) => {
     if (!ts) return '';
     const d = new Date(ts);
     const pad = (n: number) => n.toString().padStart(2, '0');
-    const year = d.getFullYear();
-    const month = pad(d.getMonth() + 1);
-    const day = pad(d.getDate());
-    const hours = pad(d.getHours());
-    const minutes = pad(d.getMinutes());
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
+    return `${pad(d.getDate())}/${pad(d.getMonth() + 1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
   };
 
-  const [editShotTime, setEditShotTime] = useState(getInputValue(player.lastShotTime));
+  // Parse pasted time - accepts formats like "21/11 15:30" or "15:30" or "21/11/2025 15:30:00"
+  const parseTimeInput = (input: string): number | null => {
+    if (!input.trim()) return null;
+
+    // Try parsing as full date first
+    let d = new Date(input);
+    if (!isNaN(d.getTime())) return d.getTime();
+
+    // Try DD/MM HH:MM or DD/MM HH:MM:SS format
+    const match = input.match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\s+(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+    if (match) {
+      const day = parseInt(match[1]);
+      const month = parseInt(match[2]) - 1;
+      const year = match[3] ? (match[3].length === 2 ? 2000 + parseInt(match[3]) : parseInt(match[3])) : new Date().getFullYear();
+      const hours = parseInt(match[4]);
+      const minutes = parseInt(match[5]);
+      const seconds = match[6] ? parseInt(match[6]) : 0;
+      d = new Date(year, month, day, hours, minutes, seconds);
+      if (!isNaN(d.getTime())) return d.getTime();
+    }
+
+    // Try HH:MM format (today's date)
+    const timeMatch = input.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+    if (timeMatch) {
+      const now = new Date();
+      d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(timeMatch[1]), parseInt(timeMatch[2]), timeMatch[3] ? parseInt(timeMatch[3]) : 0);
+      if (!isNaN(d.getTime())) return d.getTime();
+    }
+
+    return null;
+  };
+
+  const [editShotTime, setEditShotTime] = useState(getDisplayTime(player.lastShotTime));
 
   const windows = player.lastShotTime ? calculateProWindows(player.lastShotTime) : null;
 
@@ -86,10 +114,12 @@ const PlayerRow: React.FC<PlayerRowProps> = ({ player, serverTime, userRole, onU
     let newShotTime = player.lastShotTime;
 
     if (editShotTime) {
-      const d = new Date(editShotTime);
-      if (!isNaN(d.getTime())) {
-        newShotTime = d.getTime();
+      const parsed = parseTimeInput(editShotTime);
+      if (parsed) {
+        newShotTime = parsed;
       }
+    } else {
+      newShotTime = null;
     }
 
     onUpdate({
@@ -173,10 +203,11 @@ const PlayerRow: React.FC<PlayerRowProps> = ({ player, serverTime, userRole, onU
       <td className={cellClass}>
         {isEditing ? (
           <input
-            type="datetime-local"
+            type="text"
             value={editShotTime}
             onChange={(e) => setEditShotTime(e.target.value)}
-            className="bg-tactical-black border border-tactical-border text-white p-2 w-full text-xs focus:border-accent-red outline-none"
+            placeholder="DD/MM HH:MM"
+            className="bg-tactical-black border border-tactical-border text-white p-2 w-full text-xs focus:border-accent-red outline-none font-mono"
           />
         ) : (
           player.lastShotTime ? (
