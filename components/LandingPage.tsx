@@ -28,15 +28,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
           <div className="absolute inset-0 border border-tactical-border"></div>
           <div className="absolute inset-2 border border-dashed border-tactical-border opacity-50"></div>
 
-          <div className="relative z-10 bg-tactical-black p-4 border border-accent-gold/30">
-            <Crosshair className="w-10 h-10 text-accent-gold" />
+          <div className="relative z-10 bg-tactical-black p-4 border border-accent-red/30">
+            <Crosshair className="w-10 h-10 text-accent-red" />
           </div>
         </div>
 
         {/* Title */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white tracking-widest mb-2 font-mono">
-            WAR<span className="text-accent-gold">DADDY</span>
+            WAR<span className="text-accent-red">DADDY</span>
           </h1>
           <p className="text-tactical-text text-xs tracking-[0.3em] uppercase">Whack Protection System</p>
         </div>
@@ -52,7 +52,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                   onClick={() => setSelectedRole(UserRole[key])}
                   className={`px-2 py-2.5 text-[10px] font-medium uppercase tracking-wider border transition-all ${
                     selectedRole === UserRole[key]
-                      ? 'bg-accent-gold/10 text-accent-gold border-accent-gold/50'
+                      ? 'bg-accent-red/10 text-accent-red border-accent-red/50'
                       : 'bg-tactical-gray text-tactical-text border-tactical-border hover:border-gray-600 hover:text-white'
                   }`}
                 >

@@ -114,9 +114,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <Crosshair className="text-accent-gold w-5 h-5" />
+            <Crosshair className="text-accent-red w-5 h-5" />
             <h1 className="text-lg font-bold text-white tracking-wider font-mono">
-              WAR<span className="text-accent-gold">DADDY</span>
+              WAR<span className="text-accent-red">DADDY</span>
             </h1>
             <span className="px-2 py-0.5 bg-tactical-gray text-[10px] font-medium text-tactical-text uppercase tracking-wider border border-tactical-border">
               {user.role}
@@ -125,7 +125,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
           {/* Server Time */}
           <div className="flex items-center gap-2 font-mono text-sm text-white bg-tactical-gray px-4 py-2 border border-tactical-border">
-            <Clock size={14} className="text-accent-gold" />
+            <Clock size={14} className="text-accent-red" />
             <span className="tracking-wider">{new Date(serverTime).toISOString().slice(11, 19)}</span>
             <span className="text-[10px] text-tactical-text ml-1">GMT</span>
           </div>
@@ -145,7 +145,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 <button
                   onClick={handleGenerateSitrep}
                   disabled={isGenerating}
-                  className="hidden md:flex items-center gap-2 bg-accent-gold/10 hover:bg-accent-gold/20 text-accent-gold border border-accent-gold/30 px-3 py-2 text-xs uppercase tracking-wider transition-colors"
+                  className="hidden md:flex items-center gap-2 bg-accent-red/10 hover:bg-accent-red/20 text-accent-red border border-accent-red/30 px-3 py-2 text-xs uppercase tracking-wider transition-colors"
                 >
                   <FileText size={14} />
                   {isGenerating ? 'Generating...' : 'Intel Report'}
@@ -167,7 +167,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         <div className="max-w-7xl mx-auto mt-6 px-4">
           <div className="bg-tactical-dark border border-tactical-border p-4">
             <div className="flex justify-between items-start mb-3 border-b border-tactical-border pb-2">
-              <h3 className="text-accent-gold font-medium text-xs uppercase tracking-wider flex items-center gap-2">
+              <h3 className="text-accent-red font-medium text-xs uppercase tracking-wider flex items-center gap-2">
                 <FileText size={14} /> Intelligence Report
               </h3>
               <button

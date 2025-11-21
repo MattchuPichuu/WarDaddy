@@ -137,7 +137,7 @@ const PlayerRow: React.FC<PlayerRowProps> = ({ player, serverTime, userRole, onU
   const cellClass = "px-4 py-3 text-xs font-mono text-gray-400 align-middle";
 
   return (
-    <tr className={`border-b border-tactical-border transition-colors tactical-row ${flash ? 'bg-accent-gold/20' : ''} ${statusBg} ${player.status === PlayerStatus.DEAD ? 'opacity-40' : ''}`}>
+    <tr className={`border-b border-tactical-border transition-colors tactical-row ${flash ? 'bg-accent-red/20' : ''} ${statusBg} ${player.status === PlayerStatus.DEAD ? 'opacity-40' : ''}`}>
       {/* Name */}
       <td className={cellClass}>
         {isEditing ? (
@@ -145,14 +145,14 @@ const PlayerRow: React.FC<PlayerRowProps> = ({ player, serverTime, userRole, onU
             <input
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
-              className="bg-tactical-black border border-tactical-border text-white p-2 w-full focus:border-accent-gold outline-none text-xs"
+              className="bg-tactical-black border border-tactical-border text-white p-2 w-full focus:border-accent-red outline-none text-xs"
               placeholder="Name"
             />
             {player.faction === Faction.FRIENDLY && (
               <input
                 value={editDiscordId}
                 onChange={(e) => setEditDiscordId(e.target.value)}
-                className="bg-tactical-black border border-tactical-border text-gray-400 p-1.5 w-full focus:border-accent-gold outline-none text-[10px] font-mono"
+                className="bg-tactical-black border border-tactical-border text-gray-400 p-1.5 w-full focus:border-accent-red outline-none text-[10px] font-mono"
                 placeholder="Discord ID"
               />
             )}
@@ -176,7 +176,7 @@ const PlayerRow: React.FC<PlayerRowProps> = ({ player, serverTime, userRole, onU
             type="datetime-local"
             value={editShotTime}
             onChange={(e) => setEditShotTime(e.target.value)}
-            className="bg-tactical-black border border-tactical-border text-white p-2 w-full text-xs focus:border-accent-gold outline-none"
+            className="bg-tactical-black border border-tactical-border text-white p-2 w-full text-xs focus:border-accent-red outline-none"
           />
         ) : (
           player.lastShotTime ? (
@@ -215,7 +215,7 @@ const PlayerRow: React.FC<PlayerRowProps> = ({ player, serverTime, userRole, onU
         <div className="flex items-center gap-1 justify-end">
           {isEditing ? (
             <>
-              <button onClick={handleSave} className="text-accent-gold hover:bg-accent-gold/20 p-1.5 transition-colors">
+              <button onClick={handleSave} className="text-accent-red hover:bg-accent-red/20 p-1.5 transition-colors">
                 <Save size={14} />
               </button>
               <button onClick={() => setIsEditing(false)} className="text-gray-500 hover:text-white p-1.5">
@@ -228,7 +228,7 @@ const PlayerRow: React.FC<PlayerRowProps> = ({ player, serverTime, userRole, onU
                 <>
                   <button
                     onClick={handleShotNow}
-                    className={`p-1.5 transition-colors ${feedback === 'shot' ? 'text-accent-gold' : 'text-gray-500 hover:text-accent-gold'}`}
+                    className={`p-1.5 transition-colors ${feedback === 'shot' ? 'text-accent-red' : 'text-gray-500 hover:text-accent-red'}`}
                     title="Record Shot"
                   >
                     {feedback === 'shot' ? <Check size={14} /> : <Clock size={14} />}
